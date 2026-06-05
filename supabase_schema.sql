@@ -46,11 +46,38 @@ CREATE TABLE IF NOT EXISTS public.appointments (
 -- ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
 
 -- If you enable RLS, you must create policies to allow the website to read/write data. 
--- To allow anyone to book an appointment (Public Insert):
+-- To allow anyone to book, view, update status, and delete appointments (Public Insert/Select/Update/Delete):
 -- CREATE POLICY "Allow public insert to appointments" ON public.appointments FOR INSERT WITH CHECK (true);
+-- CREATE POLICY "Allow public select to appointments" ON public.appointments FOR SELECT USING (true);
+-- CREATE POLICY "Allow public update to appointments" ON public.appointments FOR UPDATE USING (true);
+-- CREATE POLICY "Allow public delete to appointments" ON public.appointments FOR DELETE USING (true);
 
 -- To allow anyone to read hairstyles (Public Select):
 -- CREATE POLICY "Allow public read hairstyles" ON public.hairstyles FOR SELECT USING (true);
 
 -- To allow anyone to read settings (Public Select):
 -- CREATE POLICY "Allow public read settings" ON public.settings FOR SELECT USING (true);
+
+-- 4. Create the qr_images table
+CREATE TABLE IF NOT EXISTS public.qr_images (
+  id text PRIMARY KEY,
+  "imageUrl" text NOT NULL,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS (Optional depending on your security needs)
+-- ALTER TABLE public.qr_images ENABLE ROW LEVEL SECURITY;
+
+-- To allow anyone to upload/read QR images:
+-- CREATE POLICY "Allow public insert to qr_images" ON public.qr_images FOR INSERT WITH CHECK (true);
+-- CREATE POLICY "Allow public read qr_images" ON public.qr_images FOR SELECT USING (true);
+
+-- 5. Enable Realtime Replication for tables (Critical for cross-device dashboard updates)
+-- Run these commands in the SQL Editor to enable Postgres Realtime for updates:
+-- ALTER TABLE public.appointments REPLICA IDENTITY FULL;
+-- ALTER TABLE public.hairstyles REPLICA IDENTITY FULL;
+-- ALTER TABLE public.settings REPLICA IDENTITY FULL;
+-- alter publication supabase_realtime add table public.appointments;
+-- alter publication supabase_realtime add table public.hairstyles;
+-- alter publication supabase_realtime add table public.settings;
+

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 
 const BookAppointment = () => {
@@ -61,6 +61,9 @@ const BookAppointment = () => {
         ]);
 
       if (insertError) throw insertError;
+
+      // Notify other open tabs (e.g. Admin Dashboard)
+      window.dispatchEvent(new Event('storage'));
 
       setMessage("Appointment booked successfully. Waiting for confirmation.");
       setFormData({ name: '', phone: '', date: '', time: '' });

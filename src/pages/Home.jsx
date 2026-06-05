@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -6,12 +6,17 @@ import { supabase } from '../lib/supabase';
 const Home = () => {
   const [featuredStyles, setFeaturedStyles] = useState([]);
 
+  const fetchStyles = async () => {
+    const { data } = await supabase.from('hairstyles').select('*').limit(15);
+    if (data) setFeaturedStyles(data);
+  };
+
   useEffect(() => {
-    const fetchStyles = async () => {
-      const { data } = await supabase.from('hairstyles').select('*').limit(15);
-      if (data) setFeaturedStyles(data);
-    };
     fetchStyles();
+    window.addEventListener('storage', fetchStyles);
+    return () => {
+      window.removeEventListener('storage', fetchStyles);
+    };
   }, []);
   return (
     <div className="w-full">
@@ -29,7 +34,7 @@ const Home = () => {
               y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
               rotateY: { repeat: Infinity, duration: 15, ease: "linear" }
             }}
-            src="/barber-chair.png" 
+            src="/barber-chair.webp" 
             alt="Luxury Barber Chair Background" 
             className="w-full min-w-[500px] md:min-w-[800px] lg:min-w-[1200px] h-auto object-contain filter drop-shadow-[0_0_60px_rgba(212,175,55,0.15)] scale-100 md:scale-125 lg:scale-150 opacity-60 md:opacity-80" 
           />
@@ -113,7 +118,7 @@ const Home = () => {
             {featuredStyles.length > 0 ? featuredStyles.map((style) => (
               <div key={style.id} className="glass-panel rounded-xl overflow-hidden group cursor-pointer hover:-translate-y-2 transition-all duration-300">
                 <div className="h-64 overflow-hidden relative">
-                  <img src={style.imageUrl || "/haircut1.png"} alt={style.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  <img src={style.imageUrl || "/haircut1.webp"} alt={style.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-richBlack/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
                 <div className="p-6">

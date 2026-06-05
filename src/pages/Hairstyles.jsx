@@ -1,30 +1,34 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 const Hairstyles = () => {
   const [hairstyles, setHairstyles] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchHairstyles = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('hairstyles')
-          .select('*');
-          
-        if (data && !error) {
-          setHairstyles(data);
-        } else if (error) {
-          console.error("Supabase error:", error);
-        }
-      } catch (err) {
-        console.error("Error fetching hairstyles:", err);
-      } finally {
-        setLoading(false);
+  const fetchHairstyles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('hairstyles')
+        .select('*');
+        
+      if (data && !error) {
+        setHairstyles(data);
+      } else if (error) {
+        console.error("Supabase error:", error);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching hairstyles:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchHairstyles();
+    window.addEventListener('storage', fetchHairstyles);
+    return () => {
+      window.removeEventListener('storage', fetchHairstyles);
+    };
   }, []);
 
   return (
@@ -47,9 +51,9 @@ const Hairstyles = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Fallback Static Data */}
             {[
-              { id: 1, name: "Luxury Pompadour", price: "500", imageUrl: "/haircut1.png" },
-              { id: 2, name: "Modern Textured Crop", price: "400", imageUrl: "/haircut2.png" },
-              { id: 3, name: "Premium Beard Sculpt", price: "300", imageUrl: "/haircut1.png" }
+              { id: 1, name: "Luxury Pompadour", price: "500", imageUrl: "/haircut1.webp" },
+              { id: 2, name: "Modern Textured Crop", price: "400", imageUrl: "/haircut2.webp" },
+              { id: 3, name: "Premium Beard Sculpt", price: "300", imageUrl: "/haircut1.webp" }
             ].map((style) => (
               <div key={style.id} className="glass-panel rounded-xl overflow-hidden group cursor-pointer hover:-translate-y-2 transition-all duration-300">
                 <div className="h-64 overflow-hidden relative">

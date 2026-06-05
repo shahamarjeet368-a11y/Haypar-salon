@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Scissors, Calendar, Settings, LogOut, Menu, X } from 'lucide-react';
 
@@ -9,10 +10,12 @@ import AppointmentsCMS from './components/AppointmentsCMS';
 import SalonSettings from './components/SalonSettings';
 
 const Dashboard = () => {
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const isCloudDB = typeof supabase.channel === 'function';
 
   useEffect(() => {
     const checkSession = async () => {
@@ -20,8 +23,9 @@ const Dashboard = () => {
       const isAuth = localStorage.getItem('admin_session');
       
       if (!isAuth) {
-        navigate('/admin');
+        navigate('/login');
       } else {
+        setUser({ email: 'admin@hypersalon.com' });
         setLoading(false);
       }
     };
@@ -32,7 +36,7 @@ const Dashboard = () => {
   const handleLogout = async () => {
     localStorage.removeItem('admin_session');
     // Optional: await supabase.auth.signOut();
-    navigate('/admin');
+    navigate('/login');
   };
 
   const navItems = [
@@ -45,19 +49,19 @@ const Dashboard = () => {
   if (loading) return <div className="text-white text-center pt-32 flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div></div>;
 
   return (
-    <div className="min-h-screen bg-richBlack flex pt-20">
+    <div className="min-h-screen bg-richBlack">
       {/* Mobile Sidebar Toggle */}
       <button 
-        className="md:hidden fixed top-24 left-4 z-50 p-2 bg-navy rounded-md text-white border border-white/10"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-navy rounded-md text-white border border-white/10"
         onClick={() => setSidebarOpen(!sidebarOpen)}
       >
         {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {/* Sidebar */}
-      <aside className={`fixed md:sticky top-20 left-0 h-[calc(100vh-5rem)] w-64 bg-[#0a1424] border-r border-white/5 transition-transform duration-300 z-40 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      <aside className={`fixed top-0 bottom-0 left-0 h-screen w-64 bg-[#0a1424] border-r border-white/5 transition-transform duration-300 z-40 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="p-6 flex flex-col h-full">
-          <div className="space-y-2 flex-1 mt-8 md:mt-0">
+          <div className="space-y-2 flex-1 mt-16 md:mt-8">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -75,9 +79,18 @@ const Dashboard = () => {
             })}
           </div>
           
+          {/* Database Connection Indicator */}
+          <div className="px-4 py-2.5 mb-4 rounded-lg border flex items-center gap-2 text-xs font-semibold bg-[#050c18] border-white/5 mt-auto">
+            <span className={`w-2 h-2 rounded-full ${isCloudDB ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}></span>
+            <span className="text-gray-400">Database:</span>
+            <span className={isCloudDB ? 'text-green-400' : 'text-yellow-500'}>
+              {isCloudDB ? 'Cloud (Supabase)' : 'Local (Mock)'}
+            </span>
+          </div>
+
           <button
             onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-400/10 transition-colors mt-auto"
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-400/10 transition-colors mb-4"
           >
             <LogOut size={20} />
             <span>Logout</span>
@@ -86,7 +99,7 @@ const Dashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 md:p-8 ml-0">
+      <main className="flex-1 p-6 md:p-8 md:ml-64 pt-20 md:pt-8">
         <div className="max-w-6xl mx-auto">
           {activeTab === 'dashboard' && <Overview />}
           {activeTab === 'hairstyles' && <HairstylesCMS />}

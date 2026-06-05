@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 const Footer = () => {
-  const [location, setLocation] = useState({
+  const location = useLocation();
+
+  const [salonLocation, setSalonLocation] = useState({
     address: "Nangloi Prem Nagar 3,\nDurga Chowk,\nDelhi"
   });
 
@@ -16,7 +19,7 @@ const Footer = () => {
           .single();
           
         if (data && !error) {
-          setLocation(data);
+          setSalonLocation(data);
         }
       } catch (err) {
         console.error("Error fetching location", err);
@@ -24,6 +27,10 @@ const Footer = () => {
     };
     fetchLocation();
   }, []);
+
+  if (location.pathname === '/admin/dashboard') {
+    return null;
+  }
 
   return (
     <footer className="bg-[#050c18] border-t border-white/5 pt-16 pb-8 mt-auto">
@@ -42,7 +49,7 @@ const Footer = () => {
         <div>
           <h3 className="text-xl font-heading font-bold text-gold mb-6">Location</h3>
           <p className="text-gray-300 whitespace-pre-line mb-4 leading-relaxed">
-            {location.address}
+            {salonLocation.address}
           </p>
           {/* Simple placeholder for Maps Embed */}
           <div className="w-full h-48 bg-navy rounded-lg overflow-hidden border border-white/10 opacity-80 hover:opacity-100 transition-opacity">
@@ -53,7 +60,7 @@ const Footer = () => {
               style={{ border: 0 }}
               loading="lazy"
               allowFullScreen
-              src={`https://maps.google.com/maps?q=${encodeURIComponent(location.address.replace(/\n/g, ' '))}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(salonLocation.address.replace(/\n/g, ' '))}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
             ></iframe>
           </div>
         </div>

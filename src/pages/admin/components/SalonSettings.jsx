@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { MapPin } from 'lucide-react';
 
@@ -7,6 +7,10 @@ const SalonSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   const fetchSettings = async () => {
     try {
@@ -24,10 +28,6 @@ const SalonSettings = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchSettings();
-  }, []);
 
   const handleSave = async (e) => {
     e.preventDefault();

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 
@@ -9,6 +9,10 @@ const HairstylesCMS = () => {
   const [formData, setFormData] = useState({ id: '', name: '', price: '', imageUrl: '' });
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    fetchHairstyles();
+  }, []);
 
   const fetchHairstyles = async () => {
     try {
@@ -21,10 +25,6 @@ const HairstylesCMS = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchHairstyles();
-  }, []);
 
   const openAddModal = () => {
     setFormData({ id: '', name: '', price: '', imageUrl: '' });
@@ -54,8 +54,40 @@ const HairstylesCMS = () => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, imageUrl: reader.result });
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          // Set maximum dimensions for thumbnail
+          const MAX_WIDTH = 400;
+          const MAX_HEIGHT = 400;
+          let width = img.width;
+          let height = img.height;
+
+          // Calculate aspect ratio
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width = Math.round((width * MAX_HEIGHT) / height);
+              height = MAX_HEIGHT;
+            }
+          }
+
+          // Draw on canvas for compression
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Get compressed Base64 (JPEG format with 0.6 quality)
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+          setFormData(prev => ({ ...prev, imageUrl: compressedBase64 }));
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     }
@@ -95,7 +127,7 @@ const HairstylesCMS = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <h2 className="text-3xl font-heading font-bold text-white">Hairstyles Management</h2>
         <button onClick={openAddModal} className="btn-gold flex items-center gap-2">
           <Plus size={20} /> Add Hairstyle
